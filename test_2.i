@@ -430,6 +430,7 @@
     type = ElasticEnergyMaterial
     base_name = C_eta1
     f_name = fel1
+    args = 'disp_x disp_y eta1 eta2 eta3 eta4'
     outputs = exodus
   [../]
 
@@ -460,6 +461,7 @@
     type = ElasticEnergyMaterial
     base_name = C_eta2
     f_name = fel2
+    args = 'disp_x disp_y eta1 eta2 eta3 eta4'
     outputs = exodus
   [../]
 
@@ -490,6 +492,7 @@
     type = ElasticEnergyMaterial
     base_name = C_eta3
     f_name = fel3
+    args = 'disp_x disp_y eta1 eta2 eta3 eta4'
     outputs = exodus
   [../]
 
@@ -520,6 +523,7 @@
     type = ElasticEnergyMaterial
     base_name = C_eta4
     f_name = fel4
+    args = 'disp_x disp_y eta1 eta2 eta3 eta4'
     outputs = exodus
   [../]
 
