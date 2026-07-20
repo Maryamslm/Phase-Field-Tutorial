@@ -320,19 +320,19 @@
   ####################################################################################################
   # Switching and Barrier Functions
   ####################################################################################################
-  [./h1] # CORRECTED: Use exact name 'h1' as material property
+  [./h1]
     type = SwitchingFunctionMultiPhaseMaterial
     h_name = h1
     all_etas = 'eta1 eta2 eta3'
     phase_etas = eta1
   [../]
-  [./h2] # CORRECTED: Use exact name 'h2' as material property
+  [./h2]
     type = SwitchingFunctionMultiPhaseMaterial
     h_name = h2
     all_etas = 'eta1 eta2 eta3'
     phase_etas = eta2
   [../]
-  [./h3] # CORRECTED: Use exact name 'h3' as material property
+  [./h3]
     type = SwitchingFunctionMultiPhaseMaterial
     h_name = h3
     all_etas = 'eta1 eta2 eta3'
@@ -482,6 +482,26 @@
     args = 'c3a c3b'
     sum_materials = 'fch3 fel3'
   [../]
+
+  ####################################################################################################
+  # FIXED: Calculate global composition as Materials instead of using ParsedAux
+  ####################################################################################################
+  [./gr_ca_mat]
+    type = ParsedMaterial
+    f_name = gr_ca_prop
+    args = 'c1a c2a c3a'
+    material_property_names = 'h1 h2 h3'
+    function = 'h1*c1a + h2*c2a + h3*c3a'
+  [../]
+
+  [./gr_cb_mat]
+    type = ParsedMaterial
+    f_name = gr_cb_prop
+    args = 'c1b c2b c3b'
+    material_property_names = 'h1 h2 h3'
+    function = 'h1*c1b + h2*c2b + h3*c3b'
+  [../]
+
 []
 
 #########################################################################################
@@ -774,22 +794,17 @@
     kappa_names = 'kappa kappa kappa'
   [../]
 
-  # Visualizing global composition reconstruction
-  # CORRECTED: Use EXACT MATERIAL PROPERTY NAMES (h1, h2, h3) from SwitchingFunction blocks
+  # FIXED: Use MaterialPropertyAux to copy the calculated material property to the AuxVariable
   [./ca_hsquarec]
-    type = ParsedAux
+    type = MaterialPropertyAux
     variable = gr_ca
-    coupled_variables = 'c1a c2a c3a'
-    material_property_names = 'h1 h2 h3'  # EXACT NAMES MATCHING h_name IN MATERIALS
-    function = 'h1*c1a + h2*c2a + h3*c3a'
+    prop = gr_ca_prop
   [../]
 
   [./cb_hsquarec]
-    type = ParsedAux
+    type = MaterialPropertyAux
     variable = gr_cb
-    coupled_variables = 'c1b c2b c3b'
-    material_property_names = 'h1 h2 h3'  # EXACT NAMES MATCHING h_name IN MATERIALS
-    function = 'h1*c1b + h2*c2b + h3*c3b'
+    prop = gr_cb_prop
   [../]
 
   # Stress visualization
