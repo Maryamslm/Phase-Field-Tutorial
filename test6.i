@@ -775,12 +775,12 @@
   [../]
 
   # Visualizing global composition reconstruction
-  # FIXED: Added material_property_names so ParsedAux recognizes h1, h2, h3
+  # FIXED: Use input_material_properties instead of material_property_names
   [./ca_hsquarec]
     type = ParsedAux
     variable = gr_ca
     coupled_variables = 'c1a c2a c3a'
-    material_property_names = 'h1 h2 h3'
+    input_material_properties = 'h1 h2 h3'  # CORRECTED PARAMETER NAME
     function = 'h1*c1a + h2*c2a + h3*c3a'
   [../]
 
@@ -788,7 +788,7 @@
     type = ParsedAux
     variable = gr_cb
     coupled_variables = 'c1b c2b c3b'
-    material_property_names = 'h1 h2 h3'
+    input_material_properties = 'h1 h2 h3'  # CORRECTED PARAMETER NAME
     function = 'h1*c1b + h2*c2b + h3*c3b'
   [../]
 
