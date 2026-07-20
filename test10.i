@@ -1,6 +1,6 @@
-# Authored for Mediloy S-Co (Co-Cr-W) Phase-Field Simulation at 0 Kelvin
-# Simulates athermal phase fraction evolution of FCC (eta1), HCP (eta2), and mu-phase (eta3)
-# 3-Phase KKS Model with Anisotropic Elasticity (No Carbides)
+# Authored for Mediloy S-Co (Co-Cr-W) Phase-Field Simulation
+# Parameters perfectly matched to the 950°C KKS + Allen-Cahn Python model
+# Simulates phase fraction evolution of FCC (eta1), HCP (eta2), and mu-phase (eta3)
 ##########################################################################################################################################################################
 
 [Mesh]
@@ -178,12 +178,12 @@
   [./ca]
     variable = ca
     type = FunctionIC
-    function = 'r2:=sqrt((x-200)^2+(y-200)^2); r3:=sqrt((x-300)^2+(y-300)^2); if(r2<=30,0.68,if(r3<=25,0.55,0.64))'
+    function = 'r2:=sqrt((x-200)^2+(y-200)^2); r3:=sqrt((x-300)^2+(y-300)^2); if(r2<=30,0.575,if(r3<=25,0.50,0.61))'
   [../]
   [./cb]
     variable = cb
     type = FunctionIC
-    function = 'r2:=sqrt((x-200)^2+(y-200)^2); r3:=sqrt((x-300)^2+(y-300)^2); if(r2<=30,0.22,if(r3<=25,0.10,0.25))'
+    function = 'r2:=sqrt((x-200)^2+(y-200)^2); r3:=sqrt((x-300)^2+(y-300)^2); if(r2<=30,0.30,if(r3<=25,0.35,0.25))'
   [../]
 []
 
@@ -195,10 +195,11 @@
     prop_values = '1e9 6.24150943e18 1.0e9'
   [../]
 
+  # UPDATED: Molar volume matched to Python script (6.7e-6 m³/mol)
   [./molar_vol_mat]
     type = GenericConstantMaterial
     prop_names = 'molar_vol'
-    prop_values = '7.62e-6'
+    prop_values = '6.7e-6'
   [../]
 
   [./model_constants]
@@ -221,37 +222,37 @@
     function = '(energy_scale/(length_scale)^3)*6*(sigma/delta)'
   [../]
 
-  # 0 K Athermal Mobilities (Small non-zero values to allow athermal evolution)
+  # Mobilities tuned for 950°C diffusion
   [./M_si_1]
     type = GenericConstantMaterial
     prop_names = 'M_si_1'
-    prop_values = '1.0e-16'
+    prop_values = '1.0e-14'
   [../]
   [./M_si_2]
     type = GenericConstantMaterial
     prop_names = 'M_si_2'
-    prop_values = '1.0e-15'
+    prop_values = '8.0e-15'
   [../]
   [./M_si_3]
     type = GenericConstantMaterial
     prop_names = 'M_si_3'
-    prop_values = '1.0e-17'
+    prop_values = '1.0e-16'
   [../]
 
   [./M_gb_1]
     type = GenericConstantMaterial
     prop_names = 'M_gb_1'
-    prop_values = '1.0e-13'
+    prop_values = '1.0e-11'
   [../]
   [./M_gb_2]
     type = GenericConstantMaterial
     prop_names = 'M_gb_2'
-    prop_values = '1.0e-13'
+    prop_values = '8.0e-12'
   [../]
   [./M_gb_3]
     type = GenericConstantMaterial
     prop_names = 'M_gb_3'
-    prop_values = '1.0e-14'
+    prop_values = '1.0e-13'
   [../]
 
   [./ch_mobility]
@@ -267,39 +268,45 @@
     constant_names = 'factor_L'
     constant_expressions = '1.0' 
     material_property_names = 'length_scale energy_scale time_scale mu_param kappa'
-    function = '((length_scale)^3/(energy_scale*time_scale))*(16/3)*(mu_param*1.0e-15/kappa)*factor_L'
+    function = '((length_scale)^3/(energy_scale*time_scale))*(16/3)*(mu_param*1.0e-10/kappa)*factor_L'
   [../]
 
-  # 0 K Free Energy Functions (Purely enthalpic, no RT entropy term)
-  # HCP is the ground state at 0 K, so it has the lowest energy.
-  [./fch1]
+  ####################################################################################################
+  # FREE ENERGY FUNCTIONS: PERFECTLY MATCHED TO PYTHON SCRIPT
+  # K = 2.0e10 J/m³  -->  B_tau = 67 (with factor=1000 and Vm=6.7e-6)
+  # Delta_G = 400 J/mol --> A_tau = -400.0 for HCP
+  ####################################################################################################
+  [./fch1] # FCC Matrix (eta1)
     type = DerivativeParsedMaterial
     f_name = Fch1
     constant_names = 'factor_f1'
     constant_expressions = '1.0E+03'
     material_property_names = 'length_scale energy_scale molar_vol'
     args = 'c1a c1b'
-    function = '(energy_scale/(length_scale)^3) * (0.0 + 15.0*(c1a-0.64)^2 + 15.0*(c1b-0.25)^2) * factor_f1 / molar_vol'
+    # c1a (Co) eq = 0.61
+    function = '(energy_scale/(length_scale)^3) * (0.0 + 67.0*(c1a-0.61)^2 + 67.0*(c1b-0.25)^2) * factor_f1 / molar_vol'
   [../]
 
-  [./fch2]
+  [./fch2] # HCP Phase (eta2)
     type = DerivativeParsedMaterial
     f_name = Fch2
     constant_names = 'factor_f2'
     constant_expressions = '1.0E+03'
     material_property_names = 'length_scale energy_scale molar_vol'
     args = 'c2a c2b'
-    function = '(energy_scale/(length_scale)^3) * (-5.0 + 15.0*(c2a-0.68)^2 + 15.0*(c2b-0.22)^2) * factor_f2 / molar_vol'
+    # c2a (Co) eq = 0.575 (Cr-enriched), Driving force = -400 J/mol
+    function = '(energy_scale/(length_scale)^3) * (-400.0 + 67.0*(c2a-0.575)^2 + 67.0*(c2b-0.30)^2) * factor_f2 / molar_vol'
   [../]
 
-  [./fch3]
+  [./fch3] # mu-phase (eta3)
     type = DerivativeParsedMaterial
     f_name = Fch3
     constant_names = 'factor_f3'
     constant_expressions = '1.0E+03'
     material_property_names = 'length_scale energy_scale molar_vol'
     args = 'c3a c3b'
-    function = '(energy_scale/(length_scale)^3) * (-15.0 + 100.0*(c3a-0.55)^2 + 100.0*(c3b-0.10)^2) * factor_f3 / molar_vol'
+    # c3a (Co) eq = 0.50 (W-rich), Deeper well for stability
+    function = '(energy_scale/(length_scale)^3) * (-800.0 + 100.0*(c3a-0.50)^2 + 100.0*(c3b-0.10)^2) * factor_f3 / molar_vol'
   [../]
 
   [./h1]
@@ -873,7 +880,7 @@
 [Outputs]
   exodus = true
   csv = true
-  file_base = exodus_files/Mediloy_SCo_3phase_0K
+  file_base = exodus_files/Mediloy_SCo_3phase_950C
   interval = 10
   checkpoint = true
 []
