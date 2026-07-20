@@ -320,19 +320,19 @@
   ####################################################################################################
   # Switching and Barrier Functions
   ####################################################################################################
-  [./h1]
+  [./h1] # CORRECTED: Use exact name 'h1' as material property
     type = SwitchingFunctionMultiPhaseMaterial
     h_name = h1
     all_etas = 'eta1 eta2 eta3'
     phase_etas = eta1
   [../]
-  [./h2]
+  [./h2] # CORRECTED: Use exact name 'h2' as material property
     type = SwitchingFunctionMultiPhaseMaterial
     h_name = h2
     all_etas = 'eta1 eta2 eta3'
     phase_etas = eta2
   [../]
-  [./h3]
+  [./h3] # CORRECTED: Use exact name 'h3' as material property
     type = SwitchingFunctionMultiPhaseMaterial
     h_name = h3
     all_etas = 'eta1 eta2 eta3'
@@ -775,12 +775,12 @@
   [../]
 
   # Visualizing global composition reconstruction
-  # FIXED: Use input_material_properties instead of material_property_names
+  # CORRECTED: Use EXACT MATERIAL PROPERTY NAMES (h1, h2, h3) from SwitchingFunction blocks
   [./ca_hsquarec]
     type = ParsedAux
     variable = gr_ca
     coupled_variables = 'c1a c2a c3a'
-    input_material_properties = 'h1 h2 h3'  # CORRECTED PARAMETER NAME
+    material_property_names = 'h1 h2 h3'  # EXACT NAMES MATCHING h_name IN MATERIALS
     function = 'h1*c1a + h2*c2a + h3*c3a'
   [../]
 
@@ -788,7 +788,7 @@
     type = ParsedAux
     variable = gr_cb
     coupled_variables = 'c1b c2b c3b'
-    input_material_properties = 'h1 h2 h3'  # CORRECTED PARAMETER NAME
+    material_property_names = 'h1 h2 h3'  # EXACT NAMES MATCHING h_name IN MATERIALS
     function = 'h1*c1b + h2*c2b + h3*c3b'
   [../]
 
