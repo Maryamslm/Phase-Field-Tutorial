@@ -26,7 +26,6 @@
     [../]
   [../]
   
-  # Zero displacement BCs for elasticity
   [./right_x]
     type = DirichletBC
     variable = disp_x
@@ -91,7 +90,6 @@
 
 #########################################################################################
 [Variables]
-  # Chemical potential variables (global)
   [./wa] 
     order = FIRST
     family = LAGRANGE
@@ -103,7 +101,6 @@
     scaling = 1.0E6
   [../]
 
-  # Global composition variables (ca = Co, cb = Cr; W is implicitly 1 - ca - cb)
   [./ca]
     order = FIRST
     family = LAGRANGE
@@ -113,48 +110,45 @@
     family = LAGRANGE
   [../]
 
-  # Phase-specific compositions
-  [./c1a] # FCC Co
+  [./c1a]
     order = FIRST
     family = LAGRANGE
   [../]
-  [./c2a] # HCP Co
+  [./c2a]
     order = FIRST
     family = LAGRANGE
   [../]
-  [./c3a] # mu-phase Co
-    order = FIRST
-    family = LAGRANGE
-  [../]
-
-  [./c1b] # FCC Cr
-    order = FIRST
-    family = LAGRANGE
-  [../]
-  [./c2b] # HCP Cr
-    order = FIRST
-    family = LAGRANGE
-  [../]
-  [./c3b] # mu-phase Cr
+  [./c3a]
     order = FIRST
     family = LAGRANGE
   [../]
 
-  # Order parameters (1 per distinct phase)
-  [./eta1] # FCC Matrix
+  [./c1b]
     order = FIRST
     family = LAGRANGE
   [../]
-  [./eta2] # HCP Precipitate
+  [./c2b]
     order = FIRST
     family = LAGRANGE
   [../]
-  [./eta3] # mu-phase Precipitate
+  [./c3b]
     order = FIRST
     family = LAGRANGE
   [../]
 
-  # Displacement variables for elasticity
+  [./eta1]
+    order = FIRST
+    family = LAGRANGE
+  [../]
+  [./eta2]
+    order = FIRST
+    family = LAGRANGE
+  [../]
+  [./eta3]
+    order = FIRST
+    family = LAGRANGE
+  [../]
+
   [./disp_x]
     scaling = 1.0E-05 
   [../]
@@ -165,24 +159,22 @@
 
 #########################################################################################
 [ICs]
-  # Supersaturated FCC matrix with small nuclei of HCP and mu-phase to trigger growth
   [./eta1]
     variable = eta1
     type = FunctionIC
     function = 'r2:=sqrt((x-200)^2+(y-200)^2); r3:=sqrt((x-300)^2+(y-300)^2); if(r2<=30,0,if(r3<=25,0,1))'
   [../]
-  [./eta2] # HCP nucleus
+  [./eta2]
     variable = eta2
     type = FunctionIC
     function = 'r2:=sqrt((x-200)^2+(y-200)^2); if(r2<=30,1,0)'
   [../]
-  [./eta3] # mu-phase nucleus
+  [./eta3]
     variable = eta3
     type = FunctionIC
     function = 'r3:=sqrt((x-300)^2+(y-300)^2); if(r3<=25,1,0)'
   [../]
 
-  # Global composition ICs (ca = Co, cb = Cr)
   [./ca]
     variable = ca
     type = FunctionIC
@@ -197,21 +189,18 @@
 
 #########################################################################################
 [Materials]
-  # Scale factors for unit conversion (m to nm, J to eV, s to ns)
   [./scale]
     type = GenericConstantMaterial
     prop_names = 'length_scale energy_scale time_scale'
     prop_values = '1e9 6.24150943e18 1.0e9'
   [../]
 
-  # Molar Volume (Calculated: 7.62e-6 m³/mol)
   [./molar_vol_mat]
     type = GenericConstantMaterial
     prop_names = 'molar_vol'
     prop_values = '7.62e-6'
   [../]
 
-  # Model constants
   [./model_constants]
     type = GenericConstantMaterial
     prop_names = 'sigma delta gamma'
@@ -232,24 +221,22 @@
     function = '(energy_scale/(length_scale)^3)*6*(sigma/delta)'
   [../]
 
-  # Phase-specific Bulk Mobilities (Heat Treatment Conditions)
-  [./M_si_1] # FCC
+  [./M_si_1]
     type = GenericConstantMaterial
     prop_names = 'M_si_1'
     prop_values = '1.0e-14'
   [../]
-  [./M_si_2] # HCP (Faster transformation)
+  [./M_si_2]
     type = GenericConstantMaterial
     prop_names = 'M_si_2'
     prop_values = '1.0e-12'
   [../]
-  [./M_si_3] # mu-phase (Slow, diffusion-limited)
+  [./M_si_3]
     type = GenericConstantMaterial
     prop_names = 'M_si_3'
     prop_values = '1.0e-16'
   [../]
 
-  # Phase-specific Grain Boundary Mobilities (~1000x bulk)
   [./M_gb_1]
     type = GenericConstantMaterial
     prop_names = 'M_gb_1'
@@ -266,7 +253,6 @@
     prop_values = '1.0e-13'
   [../]
 
-  # Combined Mobility Function (Phase-dependent)
   [./ch_mobility]
     type = ParsedMaterial
     f_name = M
@@ -283,11 +269,7 @@
     function = '((length_scale)^3/(energy_scale*time_scale))*(16/3)*(mu_param*6.0e-14/kappa)*factor_L'
   [../]
 
-  ####################################################################################################
-  # Free Energy Functions (Scaled by 1000 for numerical stability, matching Al-Cu-Ni style)
-  # Actual physical values are 1000x larger (e.g., -45 * 1000 = -45,000 J/mol)
-  ####################################################################################################
-  [./fch1] # FCC Matrix (Baseline phase)
+  [./fch1]
     type = DerivativeParsedMaterial
     f_name = F1
     constant_names = 'factor_f1'
@@ -297,7 +279,7 @@
     function = '(energy_scale/(length_scale)^3) * (-45.0 + 16.0*(c1a-0.64)^2 + 16.0*(c1b-0.25)^2) * factor_f1 / molar_vol'
   [../]
 
-  [./fch2] # HCP Phase (Slightly more stable to drive FCC->HCP transformation)
+  [./fch2]
     type = DerivativeParsedMaterial
     f_name = F2
     constant_names = 'factor_f2'
@@ -307,7 +289,7 @@
     function = '(energy_scale/(length_scale)^3) * (-48.0 + 16.0*(c2a-0.68)^2 + 16.0*(c2b-0.22)^2) * factor_f2 / molar_vol'
   [../]
 
-  [./fch3] # mu-phase (Highly stable W-rich intermetallic)
+  [./fch3]
     type = DerivativeParsedMaterial
     f_name = F3
     constant_names = 'factor_f3'
@@ -317,9 +299,6 @@
     function = '(energy_scale/(length_scale)^3) * (-60.0 + 100.0*(c3a-0.55)^2 + 100.0*(c3b-0.10)^2) * factor_f3 / molar_vol'
   [../]
 
-  ####################################################################################################
-  # Switching and Barrier Functions
-  ####################################################################################################
   [./h1]
     type = SwitchingFunctionMultiPhaseMaterial
     h_name = h1
@@ -358,11 +337,7 @@
     function_name = g3
   [../]
 
-  ####################################################################################################
-  # Elastic Properties (Converted to eV/nm³: 1 GPa = 6.2415 eV/nm³)
-  # symmetric9 order: C11, C12, C13, C22, C23, C33, C44, C55, C66
-  ####################################################################################################
-  [./elasticity_tensor_1] # FCC (Cubic: C11=C22=C33, C12=C13=C23, C44=C55=C66)
+  [./elasticity_tensor_1]
     type = ComputeElasticityTensor
     base_name = C_eta1
     fill_method = symmetric9
@@ -393,7 +368,7 @@
     outputs = exodus
   [../]
 
-  [./elasticity_tensor_2] # HCP (Hexagonal)
+  [./elasticity_tensor_2]
     type = ComputeElasticityTensor
     base_name = C_eta2
     fill_method = symmetric9
@@ -424,7 +399,7 @@
     outputs = exodus
   [../]
 
-  [./elasticity_tensor_3] # mu-phase (Approximated as Hexagonal TCP)
+  [./elasticity_tensor_3]
     type = ComputeElasticityTensor
     base_name = C_eta3
     fill_method = symmetric9
@@ -455,7 +430,6 @@
     outputs = exodus
   [../]
 
-  # Global Stress Combination
   [./global_stress]
     type = MultiPhaseStressMaterial
     phase_base = 'C_eta1 C_eta2 C_eta3'
@@ -463,7 +437,6 @@
     base_name = global
   [../]
 
-  # Total Free Energy Summation per phase
   [./F_1]
     type = DerivativeSumMaterial
     f_name = F1_tot
@@ -483,9 +456,6 @@
     sum_materials = 'fch3 fel3'
   [../]
 
-  ####################################################################################################
-  # FIXED: Dummy materials for phases 4, 5, 6 so the custom 6-phase kernel works for our 3-phase model
-  ####################################################################################################
   [./h4]
     type = GenericConstantMaterial
     prop_names = 'h4'
@@ -501,12 +471,10 @@
     prop_names = 'h6'
     prop_values = '0.0'
   [../]
-
 []
 
 #########################################################################################
 [Kernels]
-  # KKS Chemical Potential Equality Constraints (Component A: Co)
   [./chempot12a]
     type = KKSPhaseChemicalPotential
     variable = c1a
@@ -529,7 +497,6 @@
     fb_name = F1_tot
   [../]
 
-  # KKS Phase Concentration Constraint (Component A)
   [./phaseconcentration_a]
     type = KKSMultiPhaseConcentration
     variable = c1a
@@ -539,7 +506,6 @@
     c = ca
   [../]
 
-  # KKS Chemical Potential Equality Constraints (Component B: Cr)
   [./chempot12b]
     type = KKSPhaseChemicalPotential
     variable = c1b
@@ -562,7 +528,6 @@
     fb_name = F1_tot
   [../]
 
-  # KKS Phase Concentration Constraint (Component B)
   [./phaseconcentration_b]
     type = KKSMultiPhaseConcentration
     variable = c1b
@@ -572,7 +537,6 @@
     c = cb
   [../]
 
-  # Cahn-Hilliard Diffusion Kernels (Global Composition)
   [./CHBulka]
     type = KKSSplitCHCRes
     variable = ca
@@ -611,7 +575,6 @@
     args = 'eta1 eta2 eta3'
   [../]
 
-  # Allen-Cahn Kernels for eta1 (FCC)
   [./deta1dt]
     type = TimeDerivative
     variable = eta1
@@ -662,7 +625,6 @@
     args = 'eta2 eta3'
   [../]
 
-  # Allen-Cahn Kernels for eta2 (HCP)
   [./deta2dt]
     type = TimeDerivative
     variable = eta2
@@ -713,7 +675,6 @@
     args = 'eta1 eta3'
   [../]
 
-  # Allen-Cahn Kernels for eta3 (mu-phase)
   [./deta3dt]
     type = TimeDerivative
     variable = eta3
@@ -764,7 +725,6 @@
     args = 'eta1 eta2'
   [../]
 
-  # Elasticity Kernel
   [./TensorMechanics]
     displacements = 'disp_x disp_y'
     base_name = global
@@ -794,9 +754,6 @@
     kappa_names = 'kappa kappa kappa'
   [../]
 
-  ####################################################################################################
-  # FIXED: Use the EXACT custom kernel from your newt app, with dummy 0.0 values for phases 4, 5, 6
-  ####################################################################################################
   [./ca_hsquarec]
     type = SixPhasesSumCdothsquare
     variable = gr_ca
@@ -821,7 +778,6 @@
     h6_name = h6
   [../]
 
-  # Stress visualization
   [./von_mises_kernel]
     type = RankTwoScalarAux
     variable = von_mises
@@ -882,7 +838,7 @@
   l_tol = 1.0e-4
   nl_rel_tol = 1.0e-10
   nl_abs_tol = 1.0e-11
-  end_time = 1.0E+22 # Adjust based on desired heat treatment time scale
+  end_time = 1.0E+22
 
   [./TimeStepper]
     type = IterationAdaptiveDT
