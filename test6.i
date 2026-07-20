@@ -484,22 +484,22 @@
   [../]
 
   ####################################################################################################
-  # FIXED: Calculate global composition as Materials instead of using ParsedAux
+  # FIXED: Dummy materials for phases 4, 5, 6 so the custom 6-phase kernel works for our 3-phase model
   ####################################################################################################
-  [./gr_ca_mat]
-    type = ParsedMaterial
-    f_name = gr_ca_prop
-    args = 'c1a c2a c3a'
-    material_property_names = 'h1 h2 h3'
-    function = 'h1*c1a + h2*c2a + h3*c3a'
+  [./h4]
+    type = GenericConstantMaterial
+    prop_names = 'h4'
+    prop_values = '0.0'
   [../]
-
-  [./gr_cb_mat]
-    type = ParsedMaterial
-    f_name = gr_cb_prop
-    args = 'c1b c2b c3b'
-    material_property_names = 'h1 h2 h3'
-    function = 'h1*c1b + h2*c2b + h3*c3b'
+  [./h5]
+    type = GenericConstantMaterial
+    prop_names = 'h5'
+    prop_values = '0.0'
+  [../]
+  [./h6]
+    type = GenericConstantMaterial
+    prop_names = 'h6'
+    prop_values = '0.0'
   [../]
 
 []
@@ -794,17 +794,31 @@
     kappa_names = 'kappa kappa kappa'
   [../]
 
-  # FIXED: Use MaterialPropertyAux to copy the calculated material property to the AuxVariable
+  ####################################################################################################
+  # FIXED: Use the EXACT custom kernel from your newt app, with dummy 0.0 values for phases 4, 5, 6
+  ####################################################################################################
   [./ca_hsquarec]
-    type = MaterialPropertyAux
+    type = SixPhasesSumCdothsquare
     variable = gr_ca
-    prop = gr_ca_prop
+    var1 = ca
+    h1_name = h1
+    h2_name = h2
+    h3_name = h3
+    h4_name = h4
+    h5_name = h5
+    h6_name = h6
   [../]
 
   [./cb_hsquarec]
-    type = MaterialPropertyAux
+    type = SixPhasesSumCdothsquare
     variable = gr_cb
-    prop = gr_cb_prop
+    var1 = cb
+    h1_name = h1
+    h2_name = h2
+    h3_name = h3
+    h4_name = h4
+    h5_name = h5
+    h6_name = h6
   [../]
 
   # Stress visualization
